@@ -1,0 +1,580 @@
+{
+	"name": "PL_Master",
+	"properties": {
+		"activities": [
+			{
+				"name": "LK_Level_1",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT * FROM brazilan_Ecommerce.ctrl_SourceConfig \nWHERE LoadLevel = 1 AND IsActive = 1",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzSQL_to_adf",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "ctrl_SourceConfig",
+							"SchemaName": "brazilan_Ecommerce"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "FE_Level_1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "LK_Level_1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('LK_Level_1').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Route_By_LoadType_1",
+							"type": "Switch",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"on": {
+									"value": "@item().LoadType",
+									"type": "Expression"
+								},
+								"cases": [
+									{
+										"value": "Full",
+										"activities": [
+											{
+												"name": "PL_Ingest_Full",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"policy": {
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "PL_Ingest_Full",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"SourceId": "@item().SourceId",
+														"SourceSchemaName": "@item().SourceSchemaName",
+														"SourceTableName": "@item().SourceTableName",
+														"TargetSchemaName": "@item().TargetSchemaName"
+													}
+												}
+											}
+										]
+									},
+									{
+										"value": "Incremental",
+										"activities": [
+											{
+												"name": "PL_Ingest_Incremental",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"policy": {
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "PL_Ingest_Incremental",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"SourceId": "@item().SourceId",
+														"SourceSchemaName": "@item().SourceSchemaName",
+														"SourceTableName": "@item().SourceTableName",
+														"WatermarkColumn": "@item().WatermarkColumn",
+														"LookbackDays": "@item().LookbackDays",
+														"TargetSchemaName": "@item().TargetSchemaName"
+													}
+												}
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "LK_Level_3",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "FE_Level_2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT * FROM brazilan_Ecommerce.ctrl_SourceConfig \nWHERE LoadLevel = 3 AND IsActive = 1",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzSQL_to_adf",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "ctrl_SourceConfig",
+							"SchemaName": "brazilan_Ecommerce"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "FE_Level_3",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "LK_Level_3",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('LK_Level_3').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Route_By_LoadType_3",
+							"type": "Switch",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"on": {
+									"value": "@item().LoadType",
+									"type": "Expression"
+								},
+								"cases": [
+									{
+										"value": "Full",
+										"activities": [
+											{
+												"name": "PL_Ingest_Full_copy1",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"policy": {
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "PL_Ingest_Full",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"SourceId": "@item().SourceId",
+														"SourceSchemaName": "@item().SourceSchemaName",
+														"SourceTableName": "@item().SourceTableName",
+														"TargetSchemaName": "@item().TargetSchemaName"
+													}
+												}
+											}
+										]
+									},
+									{
+										"value": "Incremental",
+										"activities": [
+											{
+												"name": "PL_Ingest_Incremental_copy1",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"policy": {
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "PL_Ingest_Incremental",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"SourceId": "@item().SourceId",
+														"SourceSchemaName": "@item().SourceSchemaName",
+														"SourceTableName": "@item().SourceTableName",
+														"WatermarkColumn": "@item().WatermarkColumn",
+														"LookbackDays": "@item().LookbackDays",
+														"TargetSchemaName": "@item().TargetSchemaName"
+													}
+												}
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "LK_Level_4",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "FE_Level_3",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT * FROM brazilan_Ecommerce.ctrl_SourceConfig \nWHERE LoadLevel = 4 AND IsActive = 1",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzSQL_to_adf",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "ctrl_SourceConfig",
+							"SchemaName": "brazilan_Ecommerce"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "FE_Level_4",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "LK_Level_4",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('LK_Level_4').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Route_By_LoadType_4",
+							"type": "Switch",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"on": {
+									"value": "@item().LoadType",
+									"type": "Expression"
+								},
+								"cases": [
+									{
+										"value": "Full",
+										"activities": [
+											{
+												"name": "PL_Ingest_Full_copy2",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"policy": {
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "PL_Ingest_Full",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"SourceId": "@item().SourceId",
+														"SourceSchemaName": "@item().SourceSchemaName",
+														"SourceTableName": "@item().SourceTableName",
+														"TargetSchemaName": "@item().TargetSchemaName"
+													}
+												}
+											}
+										]
+									},
+									{
+										"value": "Incremental",
+										"activities": [
+											{
+												"name": "PL_Ingest_Incremental_copy2",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"policy": {
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "PL_Ingest_Incremental",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"SourceId": "@item().SourceId",
+														"SourceSchemaName": "@item().SourceSchemaName",
+														"SourceTableName": "@item().SourceTableName",
+														"WatermarkColumn": "@item().WatermarkColumn",
+														"LookbackDays": "@item().LookbackDays",
+														"TargetSchemaName": "@item().TargetSchemaName"
+													}
+												}
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "LK_Level_2",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "FE_Level_1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT * FROM brazilan_Ecommerce.ctrl_SourceConfig \nWHERE LoadLevel = 2 AND IsActive = 1",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzSQL_to_adf",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "ctrl_SourceConfig",
+							"SchemaName": "brazilan_Ecommerce"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "FE_Level_2",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "LK_Level_2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('LK_Level_2').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Route_By_LoadType_2",
+							"type": "Switch",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"on": {
+									"value": "@item().LoadType",
+									"type": "Expression"
+								},
+								"cases": [
+									{
+										"value": "Full",
+										"activities": [
+											{
+												"name": "EXC_Ingest_Full",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"policy": {
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "PL_Ingest_Full",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"SourceId": "@item().SourceId",
+														"SourceSchemaName": "@item().SourceSchemaName",
+														"SourceTableName": "@item().SourceTableName",
+														"TargetSchemaName": "@item().TargetSchemaName"
+													}
+												}
+											}
+										]
+									},
+									{
+										"value": "Incremental",
+										"activities": [
+											{
+												"name": "EXC_Ingest_Incremental",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"policy": {
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "PL_Ingest_Incremental",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"SourceId": "@item().SourceId",
+														"SourceSchemaName": "@item().SourceSchemaName",
+														"SourceTableName": "@item().SourceTableName",
+														"WatermarkColumn": "@item().WatermarkColumn",
+														"LookbackDays": "@item().LookbackDays",
+														"TargetSchemaName": "@item().TargetSchemaName"
+													}
+												}
+											}
+										]
+									},
+									{
+										"value": "CDC",
+										"activities": [
+											{
+												"name": "PL_Ingest_CDC",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"policy": {
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "PL_Ingest_CDC",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"SourceId": "@item().SourceId",
+														"SourceSchemaName": "@item().SourceSchemaName",
+														"SourceTableName": "@item().SourceTableName",
+														"TargetSchemaName": "@item().TargetSchemaName"
+													}
+												}
+											}
+										]
+									},
+									{
+										"value": "KeyHashDiff",
+										"activities": [
+											{
+												"name": "Exec_KeyHashDiff_Ingestion",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"policy": {
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "PL_Ingest_KeyHashDiff",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"SourceId": "@item().SourceId",
+														"SourceSchemaName": "@item().SourceSchemaName",
+														"SourceTableName": "@item().SourceTableName",
+														"TargetSchemaName": "@item().TargetSchemaName",
+														"PrimaryKeyColumns": "@item().PrimaryKeyColumns"
+													}
+												}
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"annotations": []
+	}
+}

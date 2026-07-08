@@ -31,7 +31,8 @@
 							"TableName": "brazilan_Ecommerce",
 							"SchemaName": "ctrl_WatermarkTable"
 						}
-					}
+					},
+					"firstRowOnly": false
 				}
 			},
 			{
@@ -63,7 +64,8 @@
 							"TableName": "pipeline().parameters.SourceSchemaName",
 							"SchemaName": "pipeline().parameters.SourceTableName"
 						}
-					}
+					},
+					"firstRowOnly": false
 				}
 			},
 			{
@@ -191,6 +193,9 @@
 			},
 			"LookbackDays": {
 				"type": "int"
+			},
+			"TargetSchemaName": {
+				"type": "string"
 			}
 		},
 		"annotations": [],
