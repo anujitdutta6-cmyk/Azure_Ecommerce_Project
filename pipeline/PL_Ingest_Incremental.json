@@ -139,7 +139,12 @@
 				"outputs": [
 					{
 						"referenceName": "ds_adf_to_adls",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"ContainerName": "@pipeline().parameters.TargetSchemaName",
+							"DirectoryName": "@concat(pipeline().parameters.SourceTableName, '/year=', formatDateTime(utcnow(), 'yyyy'), '/month=', formatDateTime(utcnow(), 'MM'))",
+							"FileName": "@concat(pipeline().parameters.SourceTableName, '_', formatDateTime(utcnow(), 'yyyyMMdd_HHmmss'), '.parquet')"
+						}
 					}
 				]
 			},

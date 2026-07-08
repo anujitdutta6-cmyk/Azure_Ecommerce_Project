@@ -1,0 +1,231 @@
+{
+	"name": "PL_Ingest_Full",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy_Full_Data",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "SP_Log_Start",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@concat('SELECT * FROM ', pipeline().parameters.SourceSchemaName, '.', pipeline().parameters.SourceTableName)",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "AzSQL_to_adf",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "@pipeline().parameters.SourceTableName",
+							"SchemaName": "@pipeline().parameters.SourceSchemaName"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_adf_to_adls",
+						"type": "DatasetReference",
+						"parameters": {
+							"ContainerName": "@pipeline().parameters.TargetSchemaName",
+							"DirectoryName": "@concat(pipeline().parameters.SourceTableName, '/full_snapshots/year=', formatDateTime(utcnow(), 'yyyy'), '/month=', formatDateTime(utcnow(), 'MM'))",
+							"FileName": "@concat(pipeline().parameters.SourceTableName, '_FULL_', formatDateTime(utcnow(), 'yyyyMMdd_HHmmss'), '.parquet')"
+						}
+					}
+				]
+			},
+			{
+				"name": "SP_Log_Start",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[brazilan_Ecommerce].[SP_LogExecution]",
+					"storedProcedureParameters": {
+						"AdfPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "String"
+						},
+						"ErrorMessage": {
+							"value": "",
+							"type": "String"
+						},
+						"RunId": {
+							"value": "@pipeline().RunId",
+							"type": "Guid"
+						},
+						"SourceId": {
+							"value": "@pipeline().parameters.SourceId",
+							"type": "Int32"
+						},
+						"Status": {
+							"value": "Running",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "sourceAzSQL_to_adf",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_Log_Success",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Copy_Full_Data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[brazilan_Ecommerce].[SP_LogExecution]",
+					"storedProcedureParameters": {
+						"AdfPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "String"
+						},
+						"ErrorMessage": {
+							"type": "String"
+						},
+						"RunId": {
+							"value": "@pipeline().RunId",
+							"type": "Guid"
+						},
+						"SourceId": {
+							"value": "@pipeline().parameters.SourceId",
+							"type": "Int32"
+						},
+						"Status": {
+							"value": "Success",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "sourceAzSQL_to_adf",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_Log_Failure",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Copy_Full_Data",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[brazilan_Ecommerce].[SP_LogExecution]",
+					"storedProcedureParameters": {
+						"AdfPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "String"
+						},
+						"ErrorMessage": {
+							"value": "@activity('Copy_Full_Data').error.message",
+							"type": "String"
+						},
+						"RunId": {
+							"value": "@pipeline().RunId",
+							"type": "Guid"
+						},
+						"SourceId": {
+							"value": "@pipeline().parameters.SourceId",
+							"type": "Int32"
+						},
+						"Status": {
+							"value": "Failed",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "sourceAzSQL_to_adf",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"SourceId": {
+				"type": "int"
+			},
+			"SourceSchemaName": {
+				"type": "string"
+			},
+			"SourceTableName": {
+				"type": "string"
+			},
+			"TargetSchemaName": {
+				"type": "string"
+			}
+		},
+		"annotations": []
+	}
+}
