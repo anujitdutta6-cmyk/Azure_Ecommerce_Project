@@ -1,0 +1,31 @@
+{
+	"name": "ds_adf_to_adls",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adf_to_adls",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@concat(pipeline().parameters.SourceTableName, '_', formatDateTime(utcnow(), 'yyyyMMdd_HHmmss'), '.parquet')",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@concat(pipeline().parameters.SourceTableName, '/year=', formatDateTime(utcnow(), 'yyyy'), '/month=', formatDateTime(utcnow(), 'MM'))",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@pipeline().parameters.TargetSchemaName",
+					"type": "Expression"
+				}
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

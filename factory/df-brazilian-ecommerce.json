@@ -1,0 +1,15 @@
+{
+	"name": "df-brazilian-ecommerce",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "ee53ef7d-00b8-461c-bf1a-704654bb0915",
+		"tenantId": "3122aaea-199d-41bd-b70b-2818e3e609a2"
+	}
+}

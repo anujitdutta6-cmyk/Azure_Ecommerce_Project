@@ -1,0 +1,195 @@
+{
+	"name": "PL_Ingest_Incremental",
+	"properties": {
+		"activities": [
+			{
+				"name": "LK_OldWM",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "```sql\r\nSELECT ISNULL(LastWatermarkValue, '1900-01-01') AS wm\r\nFROM brazilan_Ecommerce.ctrl_WatermarkTable\r\nWHERE SourceId = @{pipeline().parameters.SourceId}",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzSQL_to_adf",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "brazilan_Ecommerce",
+							"SchemaName": "ctrl_WatermarkTable"
+						}
+					}
+				}
+			},
+			{
+				"name": "LK_NewWM",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "```sql\nSELECT CAST(MAX(@{pipeline().parameters.WatermarkColumn}) AS VARCHAR(50)) AS wm\nFROM @{pipeline().parameters.SourceSchemaName}.@{pipeline().parameters.SourceTableName}",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzSQL_to_adf",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "pipeline().parameters.SourceSchemaName",
+							"SchemaName": "pipeline().parameters.SourceTableName"
+						}
+					}
+				}
+			},
+			{
+				"name": "Copy_Incremental_Data",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "LK_OldWM",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "LK_NewWM",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@concat('SELECT * FROM ', pipeline().parameters.SourceSchemaName, '.', pipeline().parameters.SourceTableName, ' WHERE ', pipeline().parameters.WatermarkColumn, ' > DATEADD(day, -', string(pipeline().parameters.LookbackDays), ', ''', activity('LK_OldWM').output.firstRow.wm, ''') AND ', pipeline().parameters.WatermarkColumn, ' <= ''', activity('LK_NewWM').output.firstRow.wm, '''')",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "AzSQL_to_adf",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": {
+								"value": "@pipeline().parameters.SourceTableName",
+								"type": "Expression"
+							},
+							"SchemaName": {
+								"value": "@pipeline().parameters.SourceSchemaName",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_adf_to_adls",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "SP_UpdateWatermark",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Copy_Incremental_Data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[brazilan_Ecommerce].[SP_UpdateWatermark]"
+				},
+				"linkedServiceName": {
+					"referenceName": "sourceAzSQL_to_adf",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"SourceId": {
+				"type": "int"
+			},
+			"SourceSchemaName": {
+				"type": "string"
+			},
+			"SourceTableName": {
+				"type": "string"
+			},
+			"WatermarkColumn": {
+				"type": "string"
+			},
+			"LookbackDays": {
+				"type": "int"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-07-08T13:55:17Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
