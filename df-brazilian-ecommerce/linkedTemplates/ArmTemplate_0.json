@@ -1,0 +1,354 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "df-brazilian-ecommerce"
+		},
+		"ls_adf_to_adls_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ls_adf_to_adls'"
+		},
+		"sourceAzSQL_to_adf_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'sourceAzSQL_to_adf'"
+		},
+		"ls_adf_to_adls_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://saecommerce.dfs.core.windows.net/"
+		},
+		"sourceAzSQL_to_adf_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "azureprojectserveranuj.database.windows.net"
+		},
+		"sourceAzSQL_to_adf_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "free-sql-db-1310278"
+		},
+		"sourceAzSQL_to_adf_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "adminanuj"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_adf_to_adls')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('ls_adf_to_adls_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('ls_adf_to_adls_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sourceAzSQL_to_adf')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('sourceAzSQL_to_adf_properties_typeProperties_server')]",
+					"database": "[parameters('sourceAzSQL_to_adf_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('sourceAzSQL_to_adf_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('sourceAzSQL_to_adf_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzSQL_to_adf')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "sourceAzSQL_to_adf",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"TableName": {
+						"type": "string"
+					},
+					"SchemaName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": {
+						"value": "@dataset().SchemaName",
+						"type": "Expression"
+					},
+					"table": {
+						"value": "@dataset().TableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/sourceAzSQL_to_adf')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_adf_to_adls')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_adf_to_adls",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat(pipeline().parameters.SourceTableName, '_', formatDateTime(utcnow(), 'yyyyMMdd_HHmmss'), '.parquet')",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@concat(pipeline().parameters.SourceTableName, '/year=', formatDateTime(utcnow(), 'yyyy'), '/month=', formatDateTime(utcnow(), 'MM'))",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@pipeline().parameters.TargetSchemaName",
+							"type": "Expression"
+						}
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adf_to_adls')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_Ingest_Incremental')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "LK_OldWM",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "```sql\r\nSELECT ISNULL(LastWatermarkValue, '1900-01-01') AS wm\r\nFROM brazilan_Ecommerce.ctrl_WatermarkTable\r\nWHERE SourceId = @{pipeline().parameters.SourceId}",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "AzSQL_to_adf",
+								"type": "DatasetReference",
+								"parameters": {
+									"TableName": "brazilan_Ecommerce",
+									"SchemaName": "ctrl_WatermarkTable"
+								}
+							}
+						}
+					},
+					{
+						"name": "LK_NewWM",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "```sql\nSELECT CAST(MAX(@{pipeline().parameters.WatermarkColumn}) AS VARCHAR(50)) AS wm\nFROM @{pipeline().parameters.SourceSchemaName}.@{pipeline().parameters.SourceTableName}",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "AzSQL_to_adf",
+								"type": "DatasetReference",
+								"parameters": {
+									"TableName": "pipeline().parameters.SourceSchemaName",
+									"SchemaName": "pipeline().parameters.SourceTableName"
+								}
+							}
+						}
+					},
+					{
+						"name": "Copy_Incremental_Data",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "LK_OldWM",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "LK_NewWM",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "@concat('SELECT * FROM ', pipeline().parameters.SourceSchemaName, '.', pipeline().parameters.SourceTableName, ' WHERE ', pipeline().parameters.WatermarkColumn, ' > DATEADD(day, -', string(pipeline().parameters.LookbackDays), ', ''', activity('LK_OldWM').output.firstRow.wm, ''') AND ', pipeline().parameters.WatermarkColumn, ' <= ''', activity('LK_NewWM').output.firstRow.wm, '''')",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "AzSQL_to_adf",
+								"type": "DatasetReference",
+								"parameters": {
+									"TableName": {
+										"value": "@pipeline().parameters.SourceTableName",
+										"type": "Expression"
+									},
+									"SchemaName": {
+										"value": "@pipeline().parameters.SourceSchemaName",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_adf_to_adls",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "SP_UpdateWatermark",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Copy_Incremental_Data",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[brazilan_Ecommerce].[SP_UpdateWatermark]"
+						},
+						"linkedServiceName": {
+							"referenceName": "sourceAzSQL_to_adf",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"SourceId": {
+						"type": "int"
+					},
+					"SourceSchemaName": {
+						"type": "string"
+					},
+					"SourceTableName": {
+						"type": "string"
+					},
+					"WatermarkColumn": {
+						"type": "string"
+					},
+					"LookbackDays": {
+						"type": "int"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-08T13:55:17Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/AzSQL_to_adf')]",
+				"[concat(variables('factoryId'), '/datasets/ds_adf_to_adls')]",
+				"[concat(variables('factoryId'), '/linkedServices/sourceAzSQL_to_adf')]"
+			]
+		}
+	]
+}
