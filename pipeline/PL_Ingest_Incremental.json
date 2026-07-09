@@ -18,7 +18,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "```sql\r\nSELECT ISNULL(LastWatermarkValue, '1900-01-01') AS wm\r\nFROM brazilan_Ecommerce.ctrl_WatermarkTable\r\nWHERE SourceId = @{pipeline().parameters.SourceId}",
+							"value": "SELECT ISNULL(LastWatermarkValue, '1900-01-01') AS wm\nFROM brazilan_Ecommerce.ctrl_WatermarkTable\nWHERE SourceId = @{pipeline().parameters.SourceId}",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -32,7 +32,7 @@
 							"SchemaName": "ctrl_WatermarkTable"
 						}
 					},
-					"firstRowOnly": false
+					"firstRowOnly": true
 				}
 			},
 			{
@@ -51,7 +51,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "```sql\nSELECT CAST(MAX(@{pipeline().parameters.WatermarkColumn}) AS VARCHAR(50)) AS wm\nFROM @{pipeline().parameters.SourceSchemaName}.@{pipeline().parameters.SourceTableName}",
+							"value": "SELECT CAST(MAX(@{pipeline().parameters.WatermarkColumn}) AS VARCHAR(50)) AS wm\nFROM @{pipeline().parameters.SourceSchemaName}.@{pipeline().parameters.SourceTableName}",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -65,7 +65,7 @@
 							"SchemaName": "pipeline().parameters.SourceTableName"
 						}
 					},
-					"firstRowOnly": false
+					"firstRowOnly": true
 				}
 			},
 			{
