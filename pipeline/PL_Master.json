@@ -82,10 +82,22 @@
 													},
 													"waitOnCompletion": true,
 													"parameters": {
-														"SourceId": "@item().SourceId",
-														"SourceSchemaName": "@item().SourceSchemaName",
-														"SourceTableName": "@item().SourceTableName",
-														"TargetSchemaName": "@item().TargetSchemaName"
+														"SourceId": {
+															"value": "@item().SourceId",
+															"type": "Expression"
+														},
+														"SourceSchemaName": {
+															"value": "@item().SourceSchemaName",
+															"type": "Expression"
+														},
+														"SourceTableName": {
+															"value": "@item().SourceTableName",
+															"type": "Expression"
+														},
+														"TargetSchemaName": {
+															"value": "@item().TargetSchemaName",
+															"type": "Expression"
+														}
 													}
 												}
 											}
@@ -109,12 +121,30 @@
 													},
 													"waitOnCompletion": true,
 													"parameters": {
-														"SourceId": "@item().SourceId",
-														"SourceSchemaName": "@item().SourceSchemaName",
-														"SourceTableName": "@item().SourceTableName",
-														"WatermarkColumn": "@item().WatermarkColumn",
-														"LookbackDays": "@item().LookbackDays",
-														"TargetSchemaName": "@item().TargetSchemaName"
+														"SourceId": {
+															"value": "@item().SourceId",
+															"type": "Expression"
+														},
+														"SourceSchemaName": {
+															"value": "@item().SourceSchemaName",
+															"type": "Expression"
+														},
+														"SourceTableName": {
+															"value": "@item().SourceTableName",
+															"type": "Expression"
+														},
+														"WatermarkColumn": {
+															"value": "@item().WatermarkColumn",
+															"type": "Expression"
+														},
+														"LookbackDays": {
+															"value": "@item().LookbackDays",
+															"type": "Expression"
+														},
+														"TargetSchemaName": {
+															"value": "@item().TargetSchemaName",
+															"type": "Expression"
+														}
 													}
 												}
 											}
@@ -213,10 +243,22 @@
 													},
 													"waitOnCompletion": true,
 													"parameters": {
-														"SourceId": "@item().SourceId",
-														"SourceSchemaName": "@item().SourceSchemaName",
-														"SourceTableName": "@item().SourceTableName",
-														"TargetSchemaName": "@item().TargetSchemaName"
+														"SourceId": {
+															"value": "@item().SourceId",
+															"type": "Expression"
+														},
+														"SourceSchemaName": {
+															"value": "@item().SourceSchemaName",
+															"type": "Expression"
+														},
+														"SourceTableName": {
+															"value": "@item().SourceTableName",
+															"type": "Expression"
+														},
+														"TargetSchemaName": {
+															"value": "@item().TargetSchemaName",
+															"type": "Expression"
+														}
 													}
 												}
 											}
@@ -240,12 +282,30 @@
 													},
 													"waitOnCompletion": true,
 													"parameters": {
-														"SourceId": "@item().SourceId",
-														"SourceSchemaName": "@item().SourceSchemaName",
-														"SourceTableName": "@item().SourceTableName",
-														"WatermarkColumn": "@item().WatermarkColumn",
-														"LookbackDays": "@item().LookbackDays",
-														"TargetSchemaName": "@item().TargetSchemaName"
+														"SourceId": {
+															"value": "@item().SourceId",
+															"type": "Expression"
+														},
+														"SourceSchemaName": {
+															"value": "@item().SourceSchemaName",
+															"type": "Expression"
+														},
+														"SourceTableName": {
+															"value": "@item().SourceTableName",
+															"type": "Expression"
+														},
+														"WatermarkColumn": {
+															"value": "@item().WatermarkColumn",
+															"type": "Expression"
+														},
+														"LookbackDays": {
+															"value": "@item().LookbackDays",
+															"type": "Expression"
+														},
+														"TargetSchemaName": {
+															"value": "@item().TargetSchemaName",
+															"type": "Expression"
+														}
 													}
 												}
 											}
@@ -344,10 +404,22 @@
 													},
 													"waitOnCompletion": true,
 													"parameters": {
-														"SourceId": "@item().SourceId",
-														"SourceSchemaName": "@item().SourceSchemaName",
-														"SourceTableName": "@item().SourceTableName",
-														"TargetSchemaName": "@item().TargetSchemaName"
+														"SourceId": {
+															"value": "@item().SourceId",
+															"type": "Expression"
+														},
+														"SourceSchemaName": {
+															"value": "@item().SourceSchemaName",
+															"type": "Expression"
+														},
+														"SourceTableName": {
+															"value": "@item().SourceTableName",
+															"type": "Expression"
+														},
+														"TargetSchemaName": {
+															"value": "@item().TargetSchemaName",
+															"type": "Expression"
+														}
 													}
 												}
 											}
@@ -371,12 +443,30 @@
 													},
 													"waitOnCompletion": true,
 													"parameters": {
-														"SourceId": "@item().SourceId",
-														"SourceSchemaName": "@item().SourceSchemaName",
-														"SourceTableName": "@item().SourceTableName",
-														"WatermarkColumn": "@item().WatermarkColumn",
-														"LookbackDays": "@item().LookbackDays",
-														"TargetSchemaName": "@item().TargetSchemaName"
+														"SourceId": {
+															"value": "@item().SourceId",
+															"type": "Expression"
+														},
+														"SourceSchemaName": {
+															"value": "@item().SourceSchemaName",
+															"type": "Expression"
+														},
+														"SourceTableName": {
+															"value": "@item().SourceTableName",
+															"type": "Expression"
+														},
+														"WatermarkColumn": {
+															"value": "@item().WatermarkColumn",
+															"type": "Expression"
+														},
+														"LookbackDays": {
+															"value": "@item().LookbackDays",
+															"type": "Expression"
+														},
+														"TargetSchemaName": {
+															"value": "@item().TargetSchemaName",
+															"type": "Expression"
+														}
 													}
 												}
 											}
@@ -475,10 +565,22 @@
 													},
 													"waitOnCompletion": true,
 													"parameters": {
-														"SourceId": "@item().SourceId",
-														"SourceSchemaName": "@item().SourceSchemaName",
-														"SourceTableName": "@item().SourceTableName",
-														"TargetSchemaName": "@item().TargetSchemaName"
+														"SourceId": {
+															"value": "@item().SourceId",
+															"type": "Expression"
+														},
+														"SourceSchemaName": {
+															"value": "@item().SourceSchemaName",
+															"type": "Expression"
+														},
+														"SourceTableName": {
+															"value": "@item().SourceTableName",
+															"type": "Expression"
+														},
+														"TargetSchemaName": {
+															"value": "@item().TargetSchemaName",
+															"type": "Expression"
+														}
 													}
 												}
 											}
@@ -502,12 +604,30 @@
 													},
 													"waitOnCompletion": true,
 													"parameters": {
-														"SourceId": "@item().SourceId",
-														"SourceSchemaName": "@item().SourceSchemaName",
-														"SourceTableName": "@item().SourceTableName",
-														"WatermarkColumn": "@item().WatermarkColumn",
-														"LookbackDays": "@item().LookbackDays",
-														"TargetSchemaName": "@item().TargetSchemaName"
+														"SourceId": {
+															"value": "@item().SourceId",
+															"type": "Expression"
+														},
+														"SourceSchemaName": {
+															"value": "@item().SourceSchemaName",
+															"type": "Expression"
+														},
+														"SourceTableName": {
+															"value": "@item().SourceTableName",
+															"type": "Expression"
+														},
+														"WatermarkColumn": {
+															"value": "@item().WatermarkColumn",
+															"type": "Expression"
+														},
+														"LookbackDays": {
+															"value": "@item().LookbackDays",
+															"type": "Expression"
+														},
+														"TargetSchemaName": {
+															"value": "@item().TargetSchemaName",
+															"type": "Expression"
+														}
 													}
 												}
 											}
@@ -531,10 +651,22 @@
 													},
 													"waitOnCompletion": true,
 													"parameters": {
-														"SourceId": "@item().SourceId",
-														"SourceSchemaName": "@item().SourceSchemaName",
-														"SourceTableName": "@item().SourceTableName",
-														"TargetSchemaName": "@item().TargetSchemaName"
+														"SourceId": {
+															"value": "@item().SourceId",
+															"type": "Expression"
+														},
+														"SourceSchemaName": {
+															"value": "@item().SourceSchemaName",
+															"type": "Expression"
+														},
+														"SourceTableName": {
+															"value": "@item().SourceTableName",
+															"type": "Expression"
+														},
+														"TargetSchemaName": {
+															"value": "@item().TargetSchemaName",
+															"type": "Expression"
+														}
 													}
 												}
 											}
@@ -558,11 +690,26 @@
 													},
 													"waitOnCompletion": true,
 													"parameters": {
-														"SourceId": "@item().SourceId",
-														"SourceSchemaName": "@item().SourceSchemaName",
-														"SourceTableName": "@item().SourceTableName",
-														"TargetSchemaName": "@item().TargetSchemaName",
-														"PrimaryKeyColumns": "@item().PrimaryKeyColumns"
+														"SourceId": {
+															"value": "@item().SourceId",
+															"type": "Expression"
+														},
+														"SourceSchemaName": {
+															"value": "@item().SourceSchemaName",
+															"type": "Expression"
+														},
+														"SourceTableName": {
+															"value": "@item().SourceTableName",
+															"type": "Expression"
+														},
+														"TargetSchemaName": {
+															"value": "@item().TargetSchemaName",
+															"type": "Expression"
+														},
+														"PrimaryKeyColumns": {
+															"value": "@item().PrimaryKeyColumns",
+															"type": "Expression"
+														}
 													}
 												}
 											}
