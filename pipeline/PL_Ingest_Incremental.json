@@ -170,7 +170,21 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[brazilan_Ecommerce].[SP_UpdateWatermark]"
+					"storedProcedureName": "[brazilan_Ecommerce].[SP_UpdateWatermark]",
+					"storedProcedureParameters": {
+						"NewWatermarkValue": {
+							"value": "@activity('LK_NewWM').output.firstRow.wm",
+							"type": "String"
+						},
+						"RunId": {
+							"value": "@pipeline().RunId",
+							"type": "Guid"
+						},
+						"SourceId": {
+							"value": "@pipeline().parameters.SourceId",
+							"type": "Int32"
+						}
+					}
 				},
 				"linkedServiceName": {
 					"referenceName": "sourceAzSQL_to_adf",
