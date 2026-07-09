@@ -390,7 +390,7 @@
 										"value": "Full",
 										"activities": [
 											{
-												"name": "PL_Ingest_Full_copy2",
+												"name": "Exce_Ingest_Full",
 												"type": "ExecutePipeline",
 												"dependsOn": [],
 												"policy": {
@@ -429,7 +429,7 @@
 										"value": "Incremental",
 										"activities": [
 											{
-												"name": "PL_Ingest_Incremental_copy2",
+												"name": "Exce_Ingest_Incremental",
 												"type": "ExecutePipeline",
 												"dependsOn": [],
 												"policy": {
