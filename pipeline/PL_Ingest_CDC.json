@@ -101,7 +101,7 @@
 							"type": "String"
 						},
 						"ErrorMessage": {
-							"value": "",
+							"value": null,
 							"type": "String"
 						},
 						"RunId": {
@@ -159,6 +159,7 @@
 							"type": "String"
 						},
 						"ErrorMessage": {
+							"value": null,
 							"type": "String"
 						},
 						"RunId": {
