@@ -51,7 +51,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "SELECT CAST(MAX(@{pipeline().parameters.WatermarkColumn}) AS VARCHAR(50)) AS wm\nFROM @{pipeline().parameters.SourceSchemaName}.@{pipeline().parameters.SourceTableName}",
+							"value": "SELECT ISNULL(CONVERT(VARCHAR(50), MAX([@{pipeline().parameters.WatermarkColumn}]), 126), '1900-01-01') AS wm \nFROM @{pipeline().parameters.SourceSchemaName}.[@{pipeline().parameters.SourceTableName}]",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -97,7 +97,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "@concat('SELECT * FROM ', pipeline().parameters.SourceSchemaName, '.', pipeline().parameters.SourceTableName, ' WHERE ', pipeline().parameters.WatermarkColumn, ' > DATEADD(day, -', string(pipeline().parameters.LookbackDays), ', ''', activity('LK_OldWM').output.firstRow.wm, ''') AND ', pipeline().parameters.WatermarkColumn, ' <= ''', activity('LK_NewWM').output.firstRow.wm, '''')",
+							"value": "@concat('SELECT * FROM ', pipeline().parameters.SourceSchemaName, '.', pipeline().parameters.SourceTableName, ' WHERE ', pipeline().parameters.WatermarkColumn, ' > DATEADD(day, -', string(pipeline().parameters.LookbackDays), ', CAST(''', activity('LK_OldWM').output.firstRow.wm, ''' AS DATETIME2)) AND ', pipeline().parameters.WatermarkColumn, ' <= CAST(''', activity('LK_NewWM').output.firstRow.wm, ''' AS DATETIME2)')",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
