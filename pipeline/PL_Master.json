@@ -68,7 +68,7 @@
 										"value": "Full",
 										"activities": [
 											{
-												"name": "PL_Ingest_Full",
+												"name": "Exc_Ingest_Full_L1",
 												"type": "ExecutePipeline",
 												"dependsOn": [],
 												"policy": {
@@ -107,7 +107,7 @@
 										"value": "Incremental",
 										"activities": [
 											{
-												"name": "PL_Ingest_Incremental",
+												"name": "Exc_Ingest_Incremental_L1",
 												"type": "ExecutePipeline",
 												"dependsOn": [],
 												"policy": {
@@ -229,7 +229,7 @@
 										"value": "Full",
 										"activities": [
 											{
-												"name": "PL_Ingest_Full_copy1",
+												"name": "Exc_Ingest_Full_L3",
 												"type": "ExecutePipeline",
 												"dependsOn": [],
 												"policy": {
@@ -268,7 +268,7 @@
 										"value": "Incremental",
 										"activities": [
 											{
-												"name": "PL_Ingest_Incremental_copy1",
+												"name": "Exc_Ingest_Incremental_L3",
 												"type": "ExecutePipeline",
 												"dependsOn": [],
 												"policy": {
@@ -390,7 +390,7 @@
 										"value": "Full",
 										"activities": [
 											{
-												"name": "Exce_Ingest_Full",
+												"name": "Exce_Ingest_Full_L4",
 												"type": "ExecutePipeline",
 												"dependsOn": [],
 												"policy": {
@@ -429,7 +429,7 @@
 										"value": "Incremental",
 										"activities": [
 											{
-												"name": "Exce_Ingest_Incremental",
+												"name": "Exce_Ingest_Incremental_L4",
 												"type": "ExecutePipeline",
 												"dependsOn": [],
 												"policy": {
@@ -551,7 +551,7 @@
 										"value": "Full",
 										"activities": [
 											{
-												"name": "EXC_Ingest_Full",
+												"name": "EXC_Ingest_Full_L2",
 												"type": "ExecutePipeline",
 												"dependsOn": [],
 												"policy": {
@@ -590,7 +590,7 @@
 										"value": "Incremental",
 										"activities": [
 											{
-												"name": "EXC_Ingest_Incremental",
+												"name": "EXC_Ingest_Incremental_L2",
 												"type": "ExecutePipeline",
 												"dependsOn": [],
 												"policy": {
@@ -637,7 +637,7 @@
 										"value": "CDC",
 										"activities": [
 											{
-												"name": "PL_Ingest_CDC",
+												"name": "EXC_Ingest_CDC_L2",
 												"type": "ExecutePipeline",
 												"dependsOn": [],
 												"policy": {
@@ -676,7 +676,7 @@
 										"value": "KeyHashDiff",
 										"activities": [
 											{
-												"name": "Exec_KeyHashDiff_Ingestion",
+												"name": "EXC_KeyHashDiff_Ingestion_L2",
 												"type": "ExecutePipeline",
 												"dependsOn": [],
 												"policy": {
