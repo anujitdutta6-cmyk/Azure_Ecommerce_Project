@@ -720,6 +720,91 @@
 						}
 					]
 				}
+			},
+			{
+				"name": "LK_Level_5",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "FE_Level_4",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT * FROM brazilan_Ecommerce.ctrl_SourceConfig WHERE LoadLevel = 5 AND IsActive = 1",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzSQL_to_adf",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "ctrl_SourceConfig ",
+							"SchemaName": "brazilan_Ecommerce"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "FE_Level_5_Silver",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "LK_Level_5",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('LK_Level_5').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "PL_Transform_Silver",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "PL_Transform_Silver",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"TableName": "@item().SourceTableName",
+									"PrimaryKeyList": {
+										"value": "@item().PrimaryKeyColumns",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
 			}
 		],
 		"annotations": []
