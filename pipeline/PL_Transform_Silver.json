@@ -20,11 +20,11 @@
 						"type": "DataFlowReference",
 						"parameters": {
 							"TableName": {
-								"value": "@concat('''', pipeline().parameters.TableName, '''')",
+								"value": "@pipeline().parameters.TableName",
 								"type": "Expression"
 							},
 							"PrimaryKeyList": {
-								"value": "@concat('''', pipeline().parameters.PrimaryKeyList, '''')",
+								"value": "@pipeline().parameters.PrimaryKeyList",
 								"type": "Expression"
 							}
 						},
